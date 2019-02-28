@@ -1,0 +1,56 @@
+
+package main
+
+
+import (
+	"fmt"
+	"image"
+	"image/png"
+	"os"
+)
+
+
+
+func main() {
+
+	fmt.Printf("png_test golang version [main.go]\n\n")
+
+	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+
+
+	handle, err := os.Open(os.Args[1])
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer handle.Close()
+
+	pixels, err := get_pixels(handle)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+//	fmt.Println(pixels)
+	pixels = pixels
+
+/*
+	byte_array, _, err := get_8bpp_array(os.Args[1])
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println(byte_array)
+
+*/
+
+	s_img, err := form_st_img(os.Args[1])
+	if err != nil {
+		panic(err.Error())
+	}
+
+	fmt.Println(s_img)
+
+}
+

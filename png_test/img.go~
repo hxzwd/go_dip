@@ -1,0 +1,27 @@
+
+package main
+
+import (
+	"fmt"
+)
+
+type st_8bpp_image struct {
+
+	data []uint8
+	w int
+	h int
+	size int
+	name string
+	bpp int
+
+}
+
+
+func (img *st_8bpp_image) show_info() {
+
+	fmt.Printf("[image name] name = %s", img.name)
+	fmt.Printf("[image bpp] bpp = %s", img.bpp)
+	fmt.Printf("[image width] w = %d\n", img.w)
+	fmt.Printf("[image height] h = %d\n", img.h)
+	fmt.Printf("[image total size] size = w * h = %d * %d = %d\n", img.w, img.h, img.size)
+}
