@@ -4,6 +4,7 @@ package main
 import (
 	"math"
 	"fmt"
+	"sort"
 )
 
 
@@ -254,7 +255,9 @@ func t_rotate_img_backup(img st_8bpp_image, angle float64) st_8bpp_image {
 }
 
 
-func t_rotate_img(img st_8bpp_image, angle float64) st_8bpp_image {
+
+
+func t_rotate_img_old_1(img st_8bpp_image, angle float64) st_8bpp_image {
 
 	fmt.Println("Rotate: ", angle)
 
@@ -292,6 +295,164 @@ func t_rotate_img(img st_8bpp_image, angle float64) st_8bpp_image {
 //	fmt.Printf("z = %d\n", z)
 
 	res.from_matrix(mat)
+	return res
+}
+
+func rot_point(x0 int, y0 int, angle float64) (float64, float64) {
+
+	xx := (float64)(x0)
+	yy := (float64)(y0)
+	x := xx*math.Cos(angle) + yy*math.Sin(angle)
+	y := yy*math.Cos(angle) - xx*math.Sin(angle)
+	return x, y
+}
+
+func MinMax(a []float64) (float64, float64) {
+	var b []float64 = nil
+	b = make([]float64, len(a))
+	copy(b[:], a)
+	sort.Float64s(b)
+	return b[0], b[len(b) - 1]
+}
+
+func MinMaxInt(a []float64) (int, int) {
+	x, y := MinMax(a)
+	return (int)(x), (int)(y)
+}
+
+func new_bound(img st_8bpp_image, angle float64) []int {
+
+	x_max := img.w
+	y_max := img.h
+
+	x0, y0 := rot_point(0, 0, angle)
+	x1, y1 := rot_point(x_max, 0, angle)
+	x2, y2 := rot_point(x_max, y_max, angle)
+	x3, y3 := rot_point(0, y_max, angle)
+
+	xb_min, xb_max := MinMaxInt([]float64{x0, x1, x2, x3})
+	yb_min, yb_max := MinMaxInt([]float64{y0, y1, y2, y3})
+/*
+	xb_max := math.Max(x0, x1, x2, x3)
+	xb_min := math.Min(x0, x1, x2, x3)
+	yb_max := math.Max(y0, y1, y2, y3)
+	yb_min := math.Min(y0, y1, y2, y3)
+*/
+
+/*
+	fmt.Println(x0, y0)
+	fmt.Println(x1, y1)
+	fmt.Println(x2, y2)
+	fmt.Println(x3, y3)
+	fmt.Println("Bound:")
+	fmt.Println(xb_min, yb_min)
+	fmt.Println(xb_max, yb_min)
+	fmt.Println(xb_max, yb_max)
+	fmt.Println(xb_min, yb_max)
+*/
+	res := []int{xb_min, xb_max, yb_min, yb_max}
+
+	return res
+
+}
+
+func t_rotate_img_old_2_test(img st_8bpp_image, angle float64) st_8bpp_image {
+
+	fmt.Println("Rotate: ", angle)
+
+	var res st_8bpp_image
+	var dom st_domain
+//	mat := img.make_matrix()
+
+	angle = angle*math.Pi/180.0
+
+	bound_coords := new_bound(img, angle)
+	dom.init(bound_coords)
+	fmt.Println(dom.get_params())
+
+	for j := dom.y_min; j <= dom.y_max; j++ {
+		for i := dom.x_min; i <= dom.x_max; i++ {
+			x_r, y_r := rot_point(i, j, -angle)
+			if img.in_image_f(x_r, y_r) {
+				dom.set_value(i, j, 255)
+			} else {
+				dom.set_value(i, j, 0)
+			}
+		}
+	}
+
+
+//TEST BLOCK
+	x_test, y_test := 250, 100
+	x_test_r, y_test_r := rot_point(x_test, y_test, -angle)
+	fmt.Printf("\n\nTEST [-angle = %f rad]:\n%d %d\n%f %f\n", -angle, x_test, y_test, x_test_r, y_test_r)
+	fmt.Println("In image: ", img.in_image_f(x_test_r, y_test_r))
+
+	var dom_test st_domain
+	var test_file_name string = "out_imgs/test_img.png"
+	dom_test.from_matrix(img.make_matrix(), []int{0, 511, 0, 511}, 2)
+	dom_test.save_as_image(test_file_name)
+
+	var subdom_test st_domain
+	subdom_test = dom_test.get_rect_subdomain(x_test_r, y_test_r, 4)
+	fmt.Println(subdom_test.get_params())
+	fmt.Println(subdom_test.data)
+	subdom_test = dom_test.get_rect_subdomain(10.1, 0.1, 4)
+	fmt.Println(subdom_test.get_params())
+	fmt.Println(subdom_test.data)
+	fmt.Println("subdom_test.get_data_row:\n", "row = 1;\t", subdom_test.get_data_row(1), "\nrow = 3;\t", subdom_test.get_data_row(3))
+	fmt.Println("subdom_test.get_domain_row:\n", "row = -1;\t", subdom_test.get_domain_row(-1), "\nrow = 1;\t", subdom_test.get_domain_row(1))
+
+	var interp_result_float64 float64
+	var interp_result uint8
+	interp_result_float64 = f_interp_bicubic_float64(subdom_test, 10.1, 0.1)
+	interp_result = f_interp_bicubic(subdom_test, 10.1, 0.1)
+	fmt.Printf("interp_result = %d[%f]\n", interp_result, interp_result_float64)
+
+	res.from_matrix(dom.data)
+	return res
+
+}
+
+
+func t_rotate_img(img st_8bpp_image, angle float64) st_8bpp_image {
+
+	fmt.Println("Rotate: ", angle)
+
+	var res st_8bpp_image
+	var dom st_domain
+	var dom_src st_domain
+	var subdomain st_domain
+	var border_size int
+	var subdomain_size int
+
+	border_size = 2
+	subdomain_size = 4
+
+	angle = angle*math.Pi/180.0
+
+	bound_coords := new_bound(img, angle)
+	fmt.Println("Bound coords:\n", bound_coords)
+
+	dom.init(bound_coords)
+	fmt.Println("Destination domain:\n", dom.get_params())
+	dom_src.from_matrix(img.make_matrix(), []int{0, img.w - 1, 0, img.h - 1}, border_size)
+	fmt.Println("Source domain:\n", dom_src.get_params())
+
+	for j := dom.y_min; j < dom.y_max; j++ {
+		for i := dom.x_min; i < dom.x_max; i++ {
+			x_r, y_r := rot_point(i, j, -angle)
+			if img.in_image_f(x_r, y_r) {
+				subdomain = dom_src.get_rect_subdomain(x_r, y_r, subdomain_size)
+				dom.set_value(i, j, f_interp_bicubic(subdomain, x_r, y_r))
+			} else {
+				//fmt.Printf("i = %d\tj = %d\n", i, j)
+				dom.set_value(i, j, 0)
+			}
+		}
+	}
+
+	res.from_matrix(dom.data)
 	return res
 
 }

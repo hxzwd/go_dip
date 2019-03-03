@@ -130,3 +130,29 @@ func (img *st_8bpp_image) set_fn(val float64, pos int)  {
 
 	img.data[pos] = res
 }
+
+
+func (img *st_8bpp_image) in_image(x_pos int, y_pos int) (bool)  {
+
+	x_max := img.w
+	y_max := img.h
+	if x_pos < x_max && y_pos < y_max && x_pos >= 0 && y_pos >= 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+
+func (img *st_8bpp_image) in_image_f(xx float64, yy float64) (bool)  {
+	x_pos := (int)(xx)
+	y_pos := (int)(yy)
+	x_max := img.w
+	y_max := img.h
+	if x_pos < x_max && y_pos < y_max && x_pos >= 0 && y_pos >= 0 {
+		return true
+	} else {
+		return false
+	}
+}
+

@@ -155,6 +155,8 @@ func get_co_mat_(n int, m int) [][]uint32 {
 	return res
 }
 
+
+
 func make_zero_mat(n int, m int) [][]uint8 {
 	var res [][]uint8
 	for x := 0; x < n; x++ {

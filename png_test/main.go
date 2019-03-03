@@ -132,7 +132,7 @@ func run_test_1(file_name string) {
 	test_blending(blend_imgs)
 }
 
-func main() {
+func main_old_1() {
 
 	fmt.Printf("png_test golang version [main.go]\n\n")
 
@@ -282,7 +282,7 @@ func main() {
 	fft(&c_data, len(c_data), 4, 1)
 
 	fmt.Println(c_data)
-*/
+/
 
 	var test_file_name string = "images/Bagira.png"
 	run_test_1(test_file_name)
@@ -311,3 +311,115 @@ func main() {
 
 }
 
+func rot_bagira() {
+	file_name := "images/Bagira.png"
+	out_file_pattern := "out_imgs/bagira_r_%d.png"
+	var out_file string
+	var r_img st_8bpp_image
+	var angle float64
+
+	s_img, err := form_st_img(file_name)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	s_img.show_info()
+
+	angle = 45.0
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+
+	r_img = t_rotate_img(s_img, angle)
+	save_img(r_img, out_file)
+
+	angle = -13.0
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+
+	r_img = t_rotate_img(s_img, angle)
+	save_img(r_img, out_file)
+
+
+}
+
+func main() {
+
+
+	file_name := "images/baboon.png"
+	out_file_pattern := "out_imgs/test_baboon_r_%d.png"
+
+	var r_img st_8bpp_image
+	var out_file string
+	var angle float64
+
+	s_img, err := form_st_img(file_name)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	s_img.show_info()
+
+	angle = 45.0
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+
+	r_img = t_rotate_img(s_img, angle)
+
+	err = r_img.save_as_image(out_file)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	angle = -122.0
+	r_img = t_rotate_img(s_img, angle)
+
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+	err = r_img.save_as_image(out_file)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+
+	angle = 13.0
+	r_img = t_rotate_img(s_img, angle)
+
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+	err = r_img.save_as_image(out_file)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	angle = 0.0
+	r_img = t_rotate_img(s_img, angle)
+
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+	err = r_img.save_as_image(out_file)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	angle = -90.0
+	r_img = t_rotate_img(s_img, angle)
+
+	out_file = fmt.Sprintf(out_file_pattern, (int)(angle))
+	err = r_img.save_as_image(out_file)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+
+
+//	rot_bagira()
+
+}
+
+func save_img(img st_8bpp_image, filename string) {
+	err := img.save_as_image(filename)
+	if err != nil {
+		panic(err.Error())
+	}
+}
